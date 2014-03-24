@@ -1,6 +1,8 @@
 package 
 {
 	import flash.display.Sprite;
+	import flash.display.StageAlign;
+	import flash.display.StageScaleMode;
 	
 	/**
 	 * ...
@@ -11,7 +13,9 @@ package
 		
 		public function Main():void 
 		{
-			
+			stage.scaleMode = StageScaleMode.SHOW_ALL;
+			stage.align = StageAlign.TOP;
+			Root.instance.init(this);
 		}
 		
 	}
