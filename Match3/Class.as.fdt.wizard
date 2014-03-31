@@ -1,0 +1,22 @@
+package $(Package) $(CSLB){
+$(Import)	/**
+	$(CBI)* ...
+	$(CBI)* @author $(DefaultUser)
+	$(CBI)*/
+	$(Access)class $(FileName)$(Extends)$(Implements) $(CSLB){
+		
+		//--------------------------->	CONSTS				<---------------------------//
+		//--------------------------->	VARIABLES			<---------------------------//
+		//--------------------------->	CONSTRUCTOR			<---------------------------//
+		public function $(FileName)($(ConstructorArguments)) $(CSLB){
+			$(Super)$(EntryPoint)
+		}
+		
+		//--------------------------->	EVENT HANDLERS		<---------------------------//
+		//--------------------------->	PRIVATE METHODS		<---------------------------//
+		//--------------------------->	PUBLIC METHODS		<---------------------------//
+		//--------------------------->	GETTERS & SETTERS	<---------------------------//
+		
+	}
+
+}
