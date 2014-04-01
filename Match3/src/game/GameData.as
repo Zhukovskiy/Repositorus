@@ -3,7 +3,6 @@ package game
 	import configs.GameConfig;
 	import flash.events.EventDispatcher;
 	import flash.geom.Point;
-	import objects.BallObject;
 	/**
 	 * ...
 	 * @author Zhukovskiy G.B.
@@ -12,33 +11,36 @@ package game
 	{
 		
 		//--------------------------->	CONSTS				<---------------------------//
+		private const NO_BALL:int = -1;
+		static public const RANDOM:int = -1;
 		//--------------------------->	VARIABLES			<---------------------------//
-		private var _field:Vector.<Vector.<BallObject>>;
+		private var _field:Vector.<Vector.<int>>;
 		private var _score:uint;
 		//--------------------------->	CONSTRUCTOR			<---------------------------//
-		public function GameData() 
+		public function GameData(sizeX:uint, sizeY:uint) 
 		{
-			createNewField();
+			createNewField(sizeX, sizeY);
 		}
 		
 		//--------------------------->	EVENT HANDLERS		<---------------------------//
 		//--------------------------->	PRIVATE METHODS		<---------------------------//
-		private function createNewField():void 
+		private function createNewField(sizeX:uint, sizeY:uint):void 
 		{
-			_field = new Vector.<Vector.<BallObject>>();
-			for (var i:int = 0; i < GameConfig.FIELD_SIZE[0]; i++) 
+			_field = new Vector.<Vector.<int>>();
+			for (var i:int = 0; i < sizeX; i++) 
 			{
-				_field[i] = new Vector.<BallObject>();
-				for (var j:int = 0; j < GameConfig.FIELD_SIZE[1]; j++) 
+				_field[i] = new Vector.<int>();
+				for (var j:int = 0; j < sizeY; j++) 
 				{
-					_field[i][j] = new BallObject(i, j);
+					_field[i][j] = NO_BALL;
+					setBallTo(i, j);
 				}
 			}
 			updateField();
 		}
 		
 		//--------------------------->	PUBLIC METHODS		<---------------------------//
-		public function getBallAt(posX:uint, posY:uint):BallObject
+		public function getBallAt(posX:uint, posY:uint):int
 		{
 			if (_field.length <= posX || _field[posX].length <= posY)
 				throw Error('Error! GameData -> Incorrect ball position! Position: [' + posX + ', ' + posY + ']');
@@ -46,13 +48,23 @@ package game
 			return _field[posX][posY];
 		}
 		
-		public function moveBallTo(ball:BallObject, posX:uint, posY:uint):void
+		public function setBallTo(posX:uint, posY:uint, type:int = RANDOM):void
 		{
-			if (!ball || _field.length <= posX || _field[posX].length <= posY)
-				throw Error('Error! GameData -> Incorrect move ball parameters!');
-			
-			_field[posX][posY] = ball;
-			ball.updatePosition(posX, posY);
+			if (_field.length <= posX || _field[posX].length <= posY)
+				throw Error('Error! GameData -> Incorrect ball position! Position: [' + posX + ', ' + posY + ']');
+				
+			if (type == RANDOM || type < 0)
+				_field[posX][posY] = int(Math.random() * GameConfig.BALL_COLORS.length);
+			else
+				_field[posX][posY] = type;
+		}
+		
+		public function deleteBallFrom(posX:uint, posY:uint):void 
+		{
+			if (_field.length <= posX || _field[posX].length <= posY)
+				throw Error('Error! GameData -> Incorrect ball position! Position: [' + posX + ', ' + posY + ']');
+				
+			_field[posX][posY] = NO_BALL;
 		}
 		
 		public function updateField():void 
@@ -60,41 +72,31 @@ package game
 			dispatchEvent(new GameEvent(GameEvent.UPDATE_FIELD));
 		}
 		
-		public function fillFreeSpaces():Boolean 
+		public function isEmpty(posX:uint, posY:uint):Boolean
 		{
-			var result:Boolean = false;
+			if (_field.length <= posX || _field[posX].length <= posY)
+				throw Error('Error! GameData -> Incorrect ball position! Position: [' + posX + ', ' + posY + ']');
 			
-			for (var i:int = 0; i < _field.length; i++) 
-			{
-				/*for (var j:int = 0; j < GameConfig.FIELD_SIZE[1]; j++) 
-				{
-					if (_field[i][j].readyForDelete) 
-					{
-						_field[i][j] = new BallObject(i, j);
-						
-						result = true;
-					}
-				}*/
-				var emptyPoint:Point;
-				for (var j:int = _field[i].length - 1; j >= 0; j--) 
-				{
-					if (_field[i][j].readyForDelete)
-					{
-						if (!emptyPoint)
-							emptyPoint = new Point(_field[i][j].position.x, _field[i][j].position.y);
-						_field[i][j] = null;
-					}
-					else if (emptyPoint)
-					{
-						_field[i][j].updatePosition(emptyPoint.x, emptyPoint.y);
-						emptyPoint.y -= 1;
-						_field[i][j] = null;
-					}
-				}
-			}
-			
-			return result;
+			return (_field[posX][posY] == NO_BALL);
 		}
+		
+		public function removeElement(col:uint, elem:uint):void 
+		{
+			if (_field.length <= col || _field[col].length <= elem)
+				throw Error('Error! GameData -> Incorrect ball position! Position: [' + col + ', ' + elem + ']');
+				
+			_field[col].splice(elem, 1);
+		}
+		
+		public function addElement(col:uint):void 
+		{
+			if (_field.length <= col)
+				throw Error('Error! GameData -> Incorrect column! Column: ' + col);
+			
+			_field[col].unshift(NO_BALL);
+			setBallTo(col, 0);
+		}
+		
 		//--------------------------->	GETTERS & SETTERS	<---------------------------//
 		public function get score():uint 
 		{
@@ -103,10 +105,11 @@ package game
 		
 		public function set score(value:uint):void 
 		{
-			if (value < 0)
-				return;
-				
 			_score = value;
+			
+			if (_score < 0)
+				_score = 0;
+			
 			dispatchEvent(new GameEvent(GameEvent.UPDATE_SCORE));
 		}
 		

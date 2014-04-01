@@ -6,7 +6,6 @@ package windows
 	import flash.events.Event;
 	import flash.text.TextField;
 	import game.GameData;
-	import objects.BallObject;
 	
 	/**
 	 * ...
@@ -20,6 +19,7 @@ package windows
 		//--------------------------->	VARIABLES			<---------------------------//
 		private var _data:GameData;
 		private var _background:Shape;
+		private var _gameField:Sprite;
 		private var _score:TextField;
 		//--------------------------->	CONSTRUCTOR			<---------------------------//
 		public function GameWindow(data:GameData) 
@@ -50,6 +50,10 @@ package windows
 		{
 			removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			drawBackround();
+			
+			_gameField = new Sprite();
+			_gameField.x = _background.x;
+			_gameField.y = _background.y;
 			
 			_score = new TextField();
 			addChild(_score);
@@ -88,31 +92,35 @@ package windows
 		
 		private function updateField():void 
 		{
+			_gameField.graphics.clear();
 			for (var i:int = 0; i < _data.fieldWidht; i++) 
 			{
 				for (var j:int = 0; j < _data.fieldHeight; j++) 
 				{
-					var ball:BallObject = _data.getBallAt(i, j);
-					if (!ball)
+					if (_data.getBallAt(i, j) < 0)
 						continue;
-					if (!ball.parent)
-						addChild(ball);
-					if (ball.readyForDelete)
-					{
-						if (ball.parent)
-							ball.parent.removeChild(ball);
-					}
-					else
-					{
-						ball.x = _background.x + GameConfig.BALL_RADIUS * 2 * i;
-						ball.y = _background.y + GameConfig.BALL_RADIUS * 2 * j;
-					}
+					var color:uint = GameConfig.BALL_COLORS[_data.getBallAt(i, j)];
+					_gameField.graphics.lineStyle(3, color, .1);
+					_gameField.graphics.beginFill(color);
+					_gameField.graphics.drawCircle(
+													GameConfig.BALL_RADIUS + i * GameConfig.BALL_RADIUS * 2,
+													GameConfig.BALL_RADIUS + j * GameConfig.BALL_RADIUS * 2,
+													GameConfig.BALL_RADIUS
+												);
+					_gameField.graphics.endFill();
 				}
 			}
+			_gameField.buttonMode = true;
+			addChild(_gameField);
 		}
+		
 		//--------------------------->	PUBLIC METHODS		<---------------------------//
 		
 		//--------------------------->	GETTERS & SETTERS	<---------------------------//
+		public function get gameField():Sprite 
+		{
+			return _gameField;
+		}
 		
 	}
 
