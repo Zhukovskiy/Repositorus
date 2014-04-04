@@ -90,7 +90,7 @@ package game
 			var nextX:uint = ball.x + moveHor;
 			var nextY:uint = ball.y + moveVer;
 			
-			if (nextX < _data.fieldWidht && nextY < _data.fieldHeight)
+			if (nextX >= 0 && nextX < _data.fieldWidht && nextY >= 0 && nextY < _data.fieldHeight)
 				total = makeChain(new Point(nextX, nextY), color, moveHor, moveVer, total + 1);
 			
 			if (total >= GameConfig.MATCH_LENGTH)
